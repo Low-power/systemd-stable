@@ -6600,8 +6600,7 @@ SYSINIT_TARGET_WANTS += \
 	systemd-update-done.service
 
 LOCAL_FS_TARGET_WANTS += \
-	systemd-remount-fs.service \
-	tmp.mount
+	systemd-remount-fs.service
 
 REMOTE_FS_TARGET_WANTS += \
 	var-lib-machines.mount

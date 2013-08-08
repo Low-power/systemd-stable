@@ -20,3 +20,6 @@ What=tmpfs
 Where=/tmp
 Type=tmpfs
 Options=mode=1777,strictatime,nosuid,nodev
+
+[Install]
+WantedBy=local-fs.target
