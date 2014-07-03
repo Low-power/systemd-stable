@@ -63,9 +63,6 @@ static const struct {
 
 static const char *arg_dest = "/tmp";
 
-/* Sysinit services uses DefaultDependencies=no, so explicitly order after a safe subset. */
-#define SYSINIT_AFTER "local-fs.target"
-
 typedef struct SysvStub {
         char *name;
         char *path;
@@ -187,7 +184,7 @@ static int generate_unit_file(SysvStub *s) {
                 fprintf(f, "Description=%s\n", s->description);
 
         if (s->sysinit)
-                fprintf(f, "DefaultDependencies=no\nAfter=" SYSINIT_AFTER "\n");
+                fprintf(f, "DefaultDependencies=no\n");
         STRV_FOREACH(p, s->before)
                 fprintf(f, "Before=%s\n", *p);
         STRV_FOREACH(p, s->after)
@@ -275,7 +272,7 @@ static int sysv_translate_facility(SysvStub *s, unsigned line, const char *name,
 
         static const char * const table[] = {
                 /* LSB defined facilities */
-                "local_fs",             NULL,
+                "local_fs",             SPECIAL_LOCAL_FS_TARGET,
                 "network",              SPECIAL_NETWORK_ONLINE_TARGET,
                 "named",                SPECIAL_NSS_LOOKUP_TARGET,
                 "portmap",              SPECIAL_RPCBIND_TARGET,
