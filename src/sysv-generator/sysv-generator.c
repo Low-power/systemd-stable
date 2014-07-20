@@ -47,6 +47,9 @@ static const struct {
         const char *path;
         const char *target;
 } rcnd_table[] = {
+        /* Debian SysV runlevel for early boot */
+        { "rcS.d",  SPECIAL_SYSINIT_TARGET    },
+
         /* Standard SysV runlevels for start-up */
         { "rc1.d",  SPECIAL_RESCUE_TARGET     },
         { "rc2.d",  SPECIAL_MULTI_USER_TARGET },
@@ -60,10 +63,14 @@ static const struct {
 
 static const char *arg_dest = "/tmp";
 
+/* Sysinit services uses DefaultDependencies=no, so explicitly order after a safe subset. */
+#define SYSINIT_AFTER "local-fs.target"
+
 typedef struct SysvStub {
         char *name;
         char *path;
         char *description;
+        bool sysinit;
         int sysv_start_priority;
         char *pid_file;
         char **before;
@@ -179,6 +186,8 @@ static int generate_unit_file(SysvStub *s) {
         if (s->description)
                 fprintf(f, "Description=%s\n", s->description);
 
+        if (s->sysinit)
+                fprintf(f, "DefaultDependencies=no\nAfter=" SYSINIT_AFTER "\n");
         STRV_FOREACH(p, s->before)
                 fprintf(f, "Before=%s\n", *p);
         STRV_FOREACH(p, s->after)
@@ -190,11 +199,12 @@ static int generate_unit_file(SysvStub *s) {
                 "\n[Service]\n"
                 "Type=forking\n"
                 "Restart=no\n"
-                "TimeoutSec=5min\n"
+                "TimeoutSec=%s\n"
                 "IgnoreSIGPIPE=no\n"
                 "KillMode=process\n"
                 "GuessMainPID=no\n"
                 "RemainAfterExit=%s\n",
+                s->sysinit ? "0" : "5min",
                 yes_no(!s->pid_file));
 
         if (s->pid_file)
@@ -709,6 +719,11 @@ static int fix_order(SysvStub *s, Hashmap *all_services) {
                 if (s->has_lsb && other->has_lsb)
                         continue;
 
+                /* Don't order units between sysinit and regular sysv services,
+                 * they are ordered before and after basic.target anyway. */
+                if (other->sysinit != s->sysinit)
+                        continue;
+
                 if (other->sysv_start_priority < s->sysv_start_priority) {
                         r = strv_extend(&s->after, other->name);
                         if (r < 0)
@@ -907,7 +922,12 @@ static int set_dependencies_from_rcnd(const LookupPaths *lp, Hashmap *all_servic
                                         continue;
                                 }
 
-                                service->sysv_start_priority = MAX(a*10 + b, service->sysv_start_priority);
+                                if (strcmp(rcnd_table[i].target, SPECIAL_SYSINIT_TARGET) == 0) {
+                                        service->sysinit = true;
+                                        service->sysv_start_priority = a*10 + b;
+                                } else {
+                                        service->sysv_start_priority = MAX(a*10 + b, service->sysv_start_priority);
+                                }
 
                                 r = set_ensure_allocated(&runlevel_services[i], NULL);
                                 if (r < 0) {
