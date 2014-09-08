@@ -65,7 +65,7 @@
 
     <para><literallayout><filename>/etc/systemd/system/*</filename>
 <filename>/run/systemd/system/*</filename>
-<filename>/usr/lib/systemd/system/*</filename>
+<filename>/lib/systemd/system/*</filename>
 <filename>…</filename>
     </literallayout></para>
 
@@ -74,7 +74,7 @@
 <filename>$XDG_RUNTIME_DIR/systemd/user/*</filename>
 <filename>/run/systemd/user/*</filename>
 <filename>~/.local/share/systemd/user/*</filename>
-<filename>/usr/lib/systemd/user/*</filename>
+<filename>/lib/systemd/user/*</filename>
 <filename>…</filename>
     </literallayout></para>
   </refsynopsisdiv>
@@ -162,7 +162,7 @@
     to the existing name in one of the unit search paths. For example,
     <filename>systemd-networkd.service</filename> has the alias
     <filename>dbus-org.freedesktop.network1.service</filename>, created during installation as the
-    symlink <filename>/usr/lib/systemd/system/dbus-org.freedesktop.network1.service</filename>. In
+    symlink <filename>/lib/systemd/system/dbus-org.freedesktop.network1.service</filename>. In
     addition, unit files may specify aliases through the <varname>Alias=</varname> directive in the
     [Install] section; those aliases are only effective when the unit is enabled. When the unit is
     enabled, symlinks will be created for those names, and removed when the unit is disabled. For
@@ -199,10 +199,10 @@
     and have no effect.</para>
 
     <para>In addition to <filename>/etc/systemd/system</filename>, the drop-in <literal>.d</literal>
-    directories for system services can be placed in <filename>/usr/lib/systemd/system</filename> or
+    directories for system services can be placed in <filename>/lib/systemd/system</filename> or
     <filename>/run/systemd/system</filename> directories. Drop-in files in <filename>/etc</filename>
     take precedence over those in <filename>/run</filename> which in turn take precedence over those
-    in <filename>/usr/lib</filename>. Drop-in files under any of these directories take precedence
+    in <filename>/lib</filename>. Drop-in files under any of these directories take precedence
     over unit files wherever located. Multiple drop-in files with different names are applied in
     lexicographic order, regardless of which of the directories they reside in.</para>
 
@@ -324,7 +324,7 @@
       <entry>Runtime units</entry>
           </row>
           <row>
-      <entry><filename>/usr/lib/systemd/system</filename></entry>
+      <entry><filename>/lib/systemd/system</filename></entry>
       <entry>Units of installed packages</entry>
           </row>
         </tbody>
@@ -375,7 +375,7 @@
       <entry>Units of packages that have been installed in the home directory (only used when $XDG_DATA_HOME is not set)</entry>
           </row>
           <row>
-      <entry><filename>/usr/lib/systemd/user</filename></entry>
+      <entry><filename>/lib/systemd/user</filename></entry>
       <entry>Units of packages that have been installed system-wide</entry>
           </row>
         </tbody>
@@ -1348,7 +1348,7 @@ ExecStart=/usr/sbin/foo-daemon
 
       <para>There are two methods of overriding vendor settings in
       unit files: copying the unit file from
-      <filename>/usr/lib/systemd/system</filename> to
+      <filename>/lib/systemd/system</filename> to
       <filename>/etc/systemd/system</filename> and modifying the
       chosen settings. Alternatively, one can create a directory named
       <filename><replaceable>unit</replaceable>.d/</filename> within
@@ -1382,7 +1382,7 @@ ExecStart=/usr/sbin/foo-daemon
       load paths for further details.</para>
 
       <para>Suppose there is a vendor-supplied unit
-      <filename>/usr/lib/systemd/system/httpd.service</filename> with
+      <filename>/lib/systemd/system/httpd.service</filename> with
       the following contents:</para>
 
       <programlisting>[Unit]

@@ -49,7 +49,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/usr/lib/systemd/systemd-sysctl</command>
+      <command>/lib/systemd/systemd-sysctl</command>
       <arg choice="opt" rep="repeat">OPTIONS</arg>
       <arg choice="opt" rep="repeat"><replaceable>CONFIGFILE</replaceable></arg>
     </cmdsynopsis>
@@ -62,9 +62,9 @@
     <para><filename>systemd-sysctl.service</filename> is an early boot
     service that configures
     <citerefentry project='man-pages'><refentrytitle>sysctl</refentrytitle><manvolnum>8</manvolnum></citerefentry>
-    kernel parameters by invoking <command>/usr/lib/systemd/systemd-sysctl</command>.</para>
+    kernel parameters by invoking <command>/lib/systemd/systemd-sysctl</command>.</para>
 
-    <para>When invoked with no arguments, <command>/usr/lib/systemd/systemd-sysctl</command> applies
+    <para>When invoked with no arguments, <command>/lib/systemd/systemd-sysctl</command> applies
     all directives from configuration files listed in
     <citerefentry><refentrytitle>sysctl.d</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
     If one or more filenames are passed on the command line, only the directives in these files are
@@ -116,7 +116,7 @@ kernel.core_pattern = |/usr/libexec/abrt-hook-ccpp %s %c %p %u %g %t %P %I
     <example>
       <title>Update coredump handler configuration</title>
 
-      <programlisting># /usr/lib/systemd/systemd-sysctl --prefix kernel.core_pattern</programlisting>
+      <programlisting># /lib/systemd/systemd-sysctl --prefix kernel.core_pattern</programlisting>
 
       <para>This searches all the directories listed in
       <citerefentry><refentrytitle>sysctl.d</refentrytitle><manvolnum>5</manvolnum></citerefentry>
@@ -126,7 +126,7 @@ kernel.core_pattern = |/usr/libexec/abrt-hook-ccpp %s %c %p %u %g %t %P %I
     <example>
       <title>Update coredump handler configuration according to a specific file</title>
 
-      <programlisting># /usr/lib/systemd/systemd-sysctl 50-coredump.conf</programlisting>
+      <programlisting># /lib/systemd/systemd-sysctl 50-coredump.conf</programlisting>
 
       <para>This applies all the settings found in <filename>50-coredump.conf</filename>.
       Either <filename>/etc/sysctl.d/50-coredump.conf</filename>, or

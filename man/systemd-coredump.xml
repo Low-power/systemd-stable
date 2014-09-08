@@ -51,8 +51,8 @@
   </refnamediv>
 
   <refsynopsisdiv>
-    <para><filename>/usr/lib/systemd/systemd-coredump</filename></para>
-    <para><filename>/usr/lib/systemd/systemd-coredump</filename> <option>--backtrace</option></para>
+    <para><filename>/lib/systemd/systemd-coredump</filename></para>
+    <para><filename>/lib/systemd/systemd-coredump</filename> <option>--backtrace</option></para>
     <para><filename>systemd-coredump@.service</filename></para>
     <para><filename>systemd-coredump.socket</filename></para>
   </refsynopsisdiv>

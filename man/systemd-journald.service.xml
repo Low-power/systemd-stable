@@ -56,7 +56,7 @@
     <para><filename>systemd-journald.socket</filename></para>
     <para><filename>systemd-journald-dev-log.socket</filename></para>
     <para><filename>systemd-journald-audit.socket</filename></para>
-    <para><filename>/usr/lib/systemd/systemd-journald</filename></para>
+    <para><filename>/lib/systemd/systemd-journald</filename></para>
   </refsynopsisdiv>
 
   <refsect1>

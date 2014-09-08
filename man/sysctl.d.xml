@@ -128,7 +128,7 @@
       </para>
 
       <programlisting>ACTION=="add", SUBSYSTEM=="module", KERNEL=="br_netfilter", \
-      RUN+="/usr/lib/systemd/systemd-sysctl --prefix=/net/bridge"
+      RUN+="/lib/systemd/systemd-sysctl --prefix=/net/bridge"
 </programlisting>
 
       <para><filename>/etc/sysctl.d/bridge.conf</filename>:

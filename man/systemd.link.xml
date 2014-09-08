@@ -56,7 +56,7 @@
     <command>net_setup_link</command> udev builtin.</para>
 
     <para>The link files are read from the files located in the system
-    network directory <filename>/usr/lib/systemd/network</filename>,
+    network directory <filename>/lib/systemd/network</filename>,
     the volatile runtime network directory
     <filename>/run/systemd/network</filename>, and the local
     administration network directory
@@ -67,7 +67,7 @@
     However, files with identical filenames replace each other. Files
     in <filename>/etc</filename> have the highest priority, files in
     <filename>/run</filename> take precedence over files with the same
-    name in <filename>/usr/lib</filename>. This can be used to
+    name in <filename>/lib</filename>. This can be used to
     override a system-supplied link file with a local file if needed.
     As a special case, an empty file (file size 0) or symlink with the
     same name pointing to <filename>/dev/null</filename> disables the
@@ -489,7 +489,7 @@
     <title>Examples</title>
 
     <example>
-      <title>/usr/lib/systemd/network/99-default.link</title>
+      <title>/lib/systemd/network/99-default.link</title>
 
       <para>The link file <filename>99-default.link</filename> that is
       shipped with systemd defines the default naming policy for
