@@ -238,8 +238,7 @@ CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [\
         -Wl,--as-needed \
         -Wl,--no-undefined \
         -Wl,-z,relro \
-        -Wl,-z,now \
-        -pie ])
+        -Wl,-z,now])
 
 AC_SUBST([OUR_CPPFLAGS], "$with_cppflags $sanitizer_cppflags")
 AC_SUBST([OUR_CFLAGS], "-D__SANE_USERSPACE_TYPES__ $with_cflags $sanitizer_cflags")
