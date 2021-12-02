@@ -21,8 +21,8 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/epoll.h>
-
 #include <libmount.h>
+#include <sys/inotify.h>
 
 #include "sd-messages.h"
 
@@ -31,7 +31,9 @@
 #include "escape.h"
 #include "exit-status.h"
 #include "format-util.h"
+#include "fd-util.h"
 #include "fstab-util.h"
+#include "fs-util.h"
 #include "log.h"
 #include "manager.h"
 #include "mkdir.h"
@@ -1637,13 +1639,13 @@ static int mount_load_proc_self_mountinfo(Manager *m, bool set_flags) {
 }
 
 static void mount_shutdown(Manager *m) {
-
         assert(m);
 
         m->mount_event_source = sd_event_source_unref(m->mount_event_source);
+        m->mount_utab_event_source = sd_event_source_unref(m->mount_utab_event_source);
 
-        mnt_unref_monitor(m->mount_monitor);
-        m->mount_monitor = NULL;
+        m->proc_self_mountinfo = safe_fclose(m->proc_self_mountinfo);
+        m->utab_inotify_fd = safe_close(m->utab_inotify_fd);
 }
 
 static int mount_get_timeout(Unit *u, usec_t *timeout) {
@@ -1706,47 +1708,61 @@ static void mount_enumerate(Manager *m) {
 
         mnt_init_debug(0);
 
-        if (!m->mount_monitor) {
-                int fd;
-
-                m->mount_monitor = mnt_new_monitor();
-                if (!m->mount_monitor) {
-                        log_oom();
+        if (!m->proc_self_mountinfo) {
+                m->proc_self_mountinfo = fopen("/proc/self/mountinfo", "re");
+                if (!m->proc_self_mountinfo) {
+                        log_error_errno(errno, "Failed to open mountinfo: %m");
                         goto fail;
                 }
 
-                r = mnt_monitor_enable_kernel(m->mount_monitor, 1);
+                r = sd_event_add_io(m->event, &m->mount_event_source, fileno(m->proc_self_mountinfo), EPOLLPRI, mount_dispatch_io, m);
                 if (r < 0) {
-                        log_error_errno(r, "Failed to enable watching of kernel mount events: %m");
+                        log_error_errno(r, "Failed to watch mountinfo: %m");
                         goto fail;
                 }
 
-                r = mnt_monitor_enable_userspace(m->mount_monitor, 1, NULL);
-                if (r < 0) {
-                        log_error_errno(r, "Failed to enable watching of userspace mount events: %m");
-                        goto fail;
-                }
-
-                /* mnt_unref_monitor() will close the fd */
-                fd = r = mnt_monitor_get_fd(m->mount_monitor);
-                if (r < 0) {
-                        log_error_errno(r, "Failed to acquire watch file descriptor: %m");
-                        goto fail;
-                }
-
-                r = sd_event_add_io(m->event, &m->mount_event_source, fd, EPOLLIN, mount_dispatch_io, m);
-                if (r < 0) {
-                        log_error_errno(r, "Failed to watch mount file descriptor: %m");
-                        goto fail;
-                }
-
+                /* Dispatch this before we dispatch SIGCHLD, so that
+                 * we always get the events from /proc/self/mountinfo
+                 * before the SIGCHLD of /usr/bin/mount. */
                 r = sd_event_source_set_priority(m->mount_event_source, -10);
                 if (r < 0) {
                         log_error_errno(r, "Failed to adjust mount watch priority: %m");
                         goto fail;
                 }
 
-                (void) sd_event_source_set_description(m->mount_event_source, "mount-monitor-dispatch");
+                (void) sd_event_source_set_description(m->mount_event_source, "mount-mountinfo-dispatch");
+        }
+
+        if (m->utab_inotify_fd < 0) {
+                m->utab_inotify_fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+                if (m->utab_inotify_fd < 0) {
+                        r = -errno;
+                        log_error_errno(r, "Failed to initialize inotify: %m");
+                        goto fail;
+                }
+
+                (void) mkdir_p_label("/run/mount", 0755);
+
+                r = inotify_add_watch(m->utab_inotify_fd, "/run/mount", IN_MOVED_TO);
+                if (r < 0) {
+                        r = -errno;
+                        log_error_errno(r, "Failed to watch /run/mount via inotify: %m");
+                        goto fail;
+                }
+
+                r = sd_event_add_io(m->event, &m->mount_utab_event_source, m->utab_inotify_fd, EPOLLIN, mount_dispatch_io, m);
+                if (r < 0) {
+                        log_error_errno(r, "Failed to watch mount file descriptor: %m");
+                        goto fail;
+                }
+
+                r = sd_event_source_set_priority(m->mount_utab_event_source, -10);
+                if (r < 0) {
+                        log_error_errno(r, "Failed to adjust mount watch priority: %m");
+                        goto fail;
+                }
+
+                (void) sd_event_source_set_description(m->mount_utab_event_source, "mount-utab-dispatch");
         }
 
         r = mount_load_proc_self_mountinfo(m, false);
@@ -1768,27 +1784,45 @@ static int mount_dispatch_io(sd_event_source *source, int fd, uint32_t revents, 
         int r;
 
         assert(m);
-        assert(revents & EPOLLIN);
+        assert(revents & (EPOLLPRI | EPOLLIN));
 
-        if (fd == mnt_monitor_get_fd(m->mount_monitor)) {
+        /* The manager calls this for every fd event happening on the
+         * /proc/self/mountinfo file, which informs us about mounting
+         * table changes, and for /run/mount events which we watch
+         * for mount options. */
+
+        if (fd == m->utab_inotify_fd) {
                 bool rescan = false;
 
-                /* Drain all events and verify that the event is valid.
-                 *
-                 * Note that libmount also monitors /run/mount mkdir if the
-                 * directory does not exist yet. The mkdir may generate event
-                 * which is irrelevant for us.
-                 *
-                 * error: r < 0; valid: r == 0, false positive: rc == 1 */
-                do {
-                        r = mnt_monitor_next_change(m->mount_monitor, NULL, NULL);
-                        if (r == 0)
-                                rescan = true;
-                        else if (r < 0)
-                                return log_error_errno(r, "Failed to drain libmount events");
-                } while (r == 0);
+                /* FIXME: We *really* need to replace this with
+                 * libmount's own API for this, we should not hardcode
+                 * internal behaviour of libmount here. */
 
-                log_debug("libmount event [rescan: %s]", yes_no(rescan));
+                for (;;) {
+                        union inotify_event_buffer buffer;
+                        struct inotify_event *e;
+                        ssize_t l;
+
+                        l = read(fd, &buffer, sizeof(buffer));
+                        if (l < 0) {
+                                if (errno == EAGAIN || errno == EINTR)
+                                        break;
+
+                                log_error_errno(errno, "Failed to read utab inotify: %m");
+                                break;
+                        }
+
+                        FOREACH_INOTIFY_EVENT(e, buffer, l) {
+                                /* Only care about changes to utab,
+                                 * but we have to monitor the
+                                 * directory to reliably get
+                                 * notifications about when utab is
+                                 * replaced using rename(2) */
+                                if ((e->mask & IN_Q_OVERFLOW) || streq(e->name, "utab"))
+                                        rescan = true;
+                        }
+                }
+
                 if (!rescan)
                         return 0;
         }

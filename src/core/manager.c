@@ -596,7 +596,7 @@ int manager_new(UnitFileScope scope, bool test_run, Manager **_m) {
         m->idle_pipe[0] = m->idle_pipe[1] = m->idle_pipe[2] = m->idle_pipe[3] = -1;
 
         m->pin_cgroupfs_fd = m->notify_fd = m->cgroups_agent_fd = m->signal_fd = m->time_change_fd =
-                m->dev_autofs_fd = m->private_listen_fd = m->cgroup_inotify_fd =
+                m->dev_autofs_fd = m->private_listen_fd = m->utab_inotify_fd = m->cgroup_inotify_fd =
                 m->ask_password_inotify_fd = -1;
 
         m->user_lookup_fds[0] = m->user_lookup_fds[1] = -1;

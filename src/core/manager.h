@@ -180,8 +180,10 @@ struct Manager {
         Hashmap *devices_by_sysfs;
 
         /* Data specific to the mount subsystem */
-        struct libmnt_monitor *mount_monitor;
+        FILE *proc_self_mountinfo;
         sd_event_source *mount_event_source;
+        int utab_inotify_fd;
+        sd_event_source *mount_utab_event_source;
 
         /* Data specific to the swap filesystem */
         FILE *proc_swaps;
