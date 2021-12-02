@@ -276,18 +276,18 @@ static int clean_posix_shm_internal(DIR *dir, uid_t uid, gid_t gid) {
         return ret;
 
 fail:
-        return log_warning_errno(errno, "Failed to read /dev/shm: %m");
+        return log_warning_errno(errno, "Failed to read shm directory: %m");
 }
 
 static int clean_posix_shm(uid_t uid, gid_t gid) {
         _cleanup_closedir_ DIR *dir = NULL;
 
-        dir = opendir("/dev/shm");
+        dir = opendir("/run/shm");
         if (!dir) {
                 if (errno == ENOENT)
                         return 0;
 
-                return log_warning_errno(errno, "Failed to open /dev/shm: %m");
+                return log_warning_errno(errno, "Failed to open /run/shm: %m");
         }
 
         return clean_posix_shm_internal(dir, uid, gid);

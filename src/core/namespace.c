@@ -523,14 +523,6 @@ static int mount_private_dev(MountEntry *m) {
                 goto fail;
         }
 
-        devshm = strjoina(temporary_mount, "/dev/shm");
-        (void) mkdir(devshm, 01777);
-        r = mount("/dev/shm", devshm, NULL, MS_BIND, NULL);
-        if (r < 0) {
-                r = -errno;
-                goto fail;
-        }
-
         devmqueue = strjoina(temporary_mount, "/dev/mqueue");
         (void) mkdir(devmqueue, 0755);
         (void) mount("/dev/mqueue", devmqueue, NULL, MS_BIND, NULL);

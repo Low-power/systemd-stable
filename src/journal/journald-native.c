@@ -382,11 +382,8 @@ void server_process_native_file(
                         return;
                 }
 
-                e = path_startswith(k, "/dev/shm/");
-                if (!e)
-                        e = path_startswith(k, "/tmp/");
-                if (!e)
-                        e = path_startswith(k, "/var/tmp/");
+                e = path_startswith(k, "/tmp/");
+                if (!e) e = path_startswith(k, "/var/tmp/");
                 if (!e) {
                         log_error("Received file outside of allowed directories. Refusing.");
                         return;
