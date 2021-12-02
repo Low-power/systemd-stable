@@ -1165,7 +1165,7 @@ libshared_la_LIBADD = \
 	$(BLKID_LIBS) \
 	$(LIBCRYPTSETUP_LIBS)
 
-rootlibexec_LTLIBRARIES += \
+rootlib_LTLIBRARIES += \
 	libsystemd-shared.la
 
 libsystemd_shared_la_SOURCES = \

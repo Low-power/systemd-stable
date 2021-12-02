@@ -38,6 +38,7 @@ fi
 
 intltoolize --force --automake
 autoreconf --force --install --symlink
+sed -r -e "s/^([[:space:]]+)(hardcode_libdir_flag_spec[_a-zA-Z0-9]*=[\"'](\\\$(\\{wl\\}|wl)){0,1}(\\-{1,2}(rpath|blibpath|R)|\\+b ).+)/\\1#\\2/" -e "s/^([[:space:]]+)(runpath_var=[\"']{0,1}LD_RUN_PATH[\"']{0,1})/\\1#\\2/" -e 's/^([[:space:]]+)(hardcode_into_libs=yes)/\1#\2/' -e 's#( \-install_name )\\\$rpath/#\1#g' -i configure
 
 libdir() {
         echo $(cd "$1/$(gcc -print-multi-os-directory)"; pwd)
