@@ -692,7 +692,7 @@
             shown. Produces output similar to
             <programlisting>
 LISTEN           UNIT                        ACTIVATES
-/dev/initctl     systemd-initctl.socket      systemd-initctl.service
+/run/initctl     systemd-initctl.socket      systemd-initctl.service
 …
 [::]:22          sshd.socket                 sshd.service
 kobject-uevent 1 systemd-udevd-kernel.socket systemd-udevd.service

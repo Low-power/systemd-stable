@@ -6,12 +6,12 @@
 #  (at your option) any later version.
 
 [Unit]
-Description=/dev/initctl Compatibility Named Pipe
+Description=/run/initctl Compatibility Named Pipe
 Documentation=man:systemd-initctl.service(8)
 DefaultDependencies=no
 Before=sockets.target
 
 [Socket]
 ListenFIFO=/run/systemd/initctl/fifo
-Symlinks=/dev/initctl
+Symlinks=/run/initctl
 SocketMode=0600

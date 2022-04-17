@@ -418,7 +418,7 @@
     <para>systemd is compatible with the SysV init system to a large
     degree: SysV init scripts are supported and simply read as an
     alternative (though limited) configuration file format. The SysV
-    <filename>/dev/initctl</filename> interface is provided, and
+    <filename>/run/initctl</filename> interface is provided, and
     compatibility implementations of the various SysV client tools are
     available. In addition to that, various established Unix
     functionality such as <filename>/etc/fstab</filename> or the
@@ -1173,7 +1173,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><filename>/dev/initctl</filename></term>
+        <term><filename>/run/initctl</filename></term>
 
         <listitem><para>Limited compatibility support for the SysV
         client interface, as implemented by the

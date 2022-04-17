@@ -46,7 +46,7 @@
     <refname>systemd-initctl.service</refname>
     <refname>systemd-initctl.socket</refname>
     <refname>systemd-initctl</refname>
-    <refpurpose>/dev/initctl compatibility</refpurpose>
+    <refpurpose>/run/initctl compatibility</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
@@ -60,7 +60,7 @@
 
     <para><filename>systemd-initctl</filename> is a system service
     that implements compatibility with the
-    <filename>/dev/initctl</filename> FIFO file system object, as
+    <filename>/run/initctl</filename> FIFO file system object, as
     implemented by the SysV init system.
     <filename>systemd-initctl</filename> is automatically activated on
     request and terminates itself when it is unused.</para>
