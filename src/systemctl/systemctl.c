@@ -8231,7 +8231,7 @@ static int talk_initctl(void) {
         /* Try /run/initctl first since that is what sysvinit in Debian uses */
         fd = open("/run/initctl", O_WRONLY|O_NDELAY|O_CLOEXEC|O_NOCTTY);
         if (fd < 0) {
-                /* Fall back to /dev/initctl */
+                /* Fall back to INIT_FIFO */
                 fd = open(INIT_FIFO, O_WRONLY|O_NDELAY|O_CLOEXEC|O_NOCTTY);
                 if (fd < 0) {
                         if (errno == ENOENT)
@@ -8347,7 +8347,7 @@ static int start_with_fallback(void) {
         if (start_unit(0, NULL, NULL) >= 0)
                 return 0;
 
-        /* Nothing else worked, so let's try /dev/initctl */
+        /* Nothing else worked, so let's try initctl */
         if (talk_initctl() > 0)
                 return 0;
 

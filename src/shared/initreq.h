@@ -1,5 +1,5 @@
 /*
- * initreq.h	Interface to talk to init through /dev/initctl.
+ * initreq.h	Interface to talk to init through sysvinit-compatible initctl.
  *
  *		Copyright (C) 1995-2004 Miquel van Smoorenburg
  *
@@ -16,11 +16,7 @@
 
 #include <sys/param.h>
 
-#if defined(__FreeBSD_kernel__)
-#  define INIT_FIFO  "/etc/.initctl"
-#else
-#  define INIT_FIFO  "/dev/initctl"
-#endif
+#define INIT_FIFO "/var/tmp/initctl"
 
 #define INIT_MAGIC 0x03091969
 #define INIT_CMD_START		0
